@@ -179,8 +179,13 @@ public class BufferPerformanceBench {
 
   private byte[] storeSourceData(byte[] dest) throws IOException {
     requireNonNull(dest, "dest == null");
-    try (BufferedSource source = Okio.buffer(Okio.source(OriginPath))) {
+    BufferedSource source = Okio.buffer(Okio.source(OriginPath));
+    try {
       source.readFully(dest);
+    }finally{
+      if(source != null){
+        source.close();
+      }
     }
     return dest;
   }
@@ -191,11 +196,15 @@ public class BufferPerformanceBench {
     if (!path.canRead()) {
       throw new IllegalArgumentException("can not access: " + path);
     }
-
-    try (InputStream in = new FileInputStream(path)) {
+    InputStream in = new FileInputStream(path);
+    try {
       int available = in.read();
       if (available < 0) {
         throw new IllegalArgumentException("can not read: " + path);
+      }
+    } finally{
+      if(in != null){
+        in.close();
       }
     }
   }
